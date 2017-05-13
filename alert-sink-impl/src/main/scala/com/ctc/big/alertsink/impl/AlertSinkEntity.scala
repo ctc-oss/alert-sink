@@ -1,11 +1,11 @@
 package com.ctc.big.alertsink.impl
 
+import java.time.LocalDateTime
 import java.util.UUID
 
-import akka.Done
-import com.ctc.big.alertsink.api.Alert
-import com.lightbend.lagom.scaladsl.persistence.PersistentEntity
+import com.ctc.big.alertsink.api.{Alert, ExternalEvent}
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.ReplyType
+import com.lightbend.lagom.scaladsl.persistence._
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
 import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.json.{Format, Json}
@@ -38,10 +38,11 @@ class AlertSinkEntity extends PersistentEntity {
       }
 
     case AlertSinkState(Some(_)) ⇒
-      Actions().onCommand[LogAlert, String] {
-        case (LogAlert(alert), ctx, _) ⇒
+      Actions().onCommand[GenerateAlert, Alert] {
+        case (GenerateAlert(ee), ctx, _) ⇒
+          val alert = Alert(uuid, entityId, LocalDateTime.now.toString, ee.url, ee.title, ee.text, ee.metadata)
           ctx.thenPersist(AlertEvent(uuid, alert)) { e ⇒
-            ctx.reply(e.uuid)
+            ctx.reply(e.alert)
           }
       }.onEvent {
         case (AlertEvent(_, _), state) ⇒
@@ -67,9 +68,12 @@ object ApplicationRegistered {
   implicit val format: Format[ApplicationRegistered] = Json.format
 }
 
-case class AlertEvent(uuid: String, alert: Alert) extends AlertSinkEvent
+case class AlertEvent(uuid: String, alert: Alert) extends AlertSinkEvent with AggregateEvent[AlertEvent] {
+  override def aggregateTag: AggregateEventTagger[AlertEvent] = AlertEvent.Tag
+}
 object AlertEvent {
   implicit val format: Format[AlertEvent] = Json.format
+  val Tag = AggregateEventTag[AlertEvent]()
 }
 
 /*
@@ -85,9 +89,9 @@ object RegisterApplication {
   implicit val format: Format[RegisterApplication] = Json.format
 }
 
-case class LogAlert(alert: Alert) extends AlertSinkCommand[String]
-object LogAlert {
-  implicit val format: Format[LogAlert] = Json.format
+case class GenerateAlert(ee: ExternalEvent) extends AlertSinkCommand[Alert]
+object GenerateAlert {
+  implicit val format: Format[GenerateAlert] = Json.format
 }
 
 /*
@@ -106,10 +110,11 @@ object AlertSinkState {
 object AlertSinkSerializerRegistry extends JsonSerializerRegistry {
   override def serializers: Seq[JsonSerializer[_]] = Seq(
     // commands
-    JsonSerializer[LogAlert],
+    JsonSerializer[GenerateAlert],
     JsonSerializer[RegisterApplication],
 
     // events
+    JsonSerializer[Alert],
     JsonSerializer[AlertEvent],
     JsonSerializer[ApplicationRegistered],
 

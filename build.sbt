@@ -23,6 +23,7 @@ lazy val `alert-sink-impl` =
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslPersistenceCassandra,
+      lagomScaladslBroker,
       lagomScaladslTestKit,
       macwire,
       playJsonDerivedCodecs,

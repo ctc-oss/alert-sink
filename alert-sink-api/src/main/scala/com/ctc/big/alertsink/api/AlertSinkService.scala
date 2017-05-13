@@ -1,5 +1,6 @@
 package com.ctc.big.alertsink.api
 
+import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.api.transport.Method
 import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
 import play.api.libs.json.{Format, Json}
@@ -9,24 +10,34 @@ import play.api.libs.json.{Format, Json}
  * simple is as simple does
  * 1. register an application and receive a token
  * 2. submit events using that token
+ * 3. events are transformed into alerts
  */
+object AlertSinkService {
+  val AlertsTopic = "big.alerts"
+}
+
 trait AlertSinkService extends Service {
 
   /**
-   * @return id and token of application
+   * @return id and token of Application
    */
   def register(): ServiceCall[Application, ApplicationRegistration]
 
   /**
-   * @return UUID of logged alert as String
+   * @return UUID of logged Alert as String
    */
-  def ingest(id: String): ServiceCall[Alert, String]
+  // fixme;; rename to "consume"?
+  def ingest(id: String): ServiceCall[ExternalEvent, Alert]
+
+  def alerts(): Topic[Alert]
 
   override final def descriptor = {
     import Service._
     named("alert-sink").withCalls(
       restCall(Method.POST, "/api/app", register _),
       restCall(Method.POST, "/api/alert/:id", ingest _)
+    ).withTopics(
+      topic(AlertSinkService.AlertsTopic, alerts _)
     ).withAutoAcl(true)
   }
 }
@@ -41,7 +52,13 @@ object AlertMeta {
   implicit val format: Format[AlertMeta] = Json.format
 }
 
-case class Alert(source: String, timestamp: String, url: String, title: String, text: String, metadata: AlertMeta)
+case class ExternalEvent(title: String, url: String, text: String, metadata: AlertMeta)
+object ExternalEvent {
+  implicit val format: Format[ExternalEvent] = Json.format
+}
+
+// fixme;; source is probably the appid
+case class Alert(id: String, source: String, timestamp: String, url: String, title: String, text: String, metadata: AlertMeta)
 object Alert {
   implicit val format: Format[Alert] = Json.format
 }
