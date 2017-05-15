@@ -1,7 +1,24 @@
-organization in ThisBuild := "com.ctc.big"
-version in ThisBuild := "0.1"
+organization in ThisBuild := "com.ctc.ava"
 
-scalaVersion in ThisBuild := "2.11.8"
+git.useGitDescribe in ThisBuild := true
+
+scalaVersion in ThisBuild := "2.11.11"
+
+scalacOptions in ThisBuild ++= Seq(
+  "-target:jvm-1.8",
+  "-encoding", "UTF-8",
+
+  "-feature",
+  "-unchecked",
+  "-deprecation",
+
+  "-language:postfixOps",
+  "-language:implicitConversions",
+
+  "-Ywarn-unused-import",
+  "-Xfatal-warnings",
+  "-Xlint:_"
+)
 
 lazy val `alert-sink` =
   project.in(file("."))
@@ -9,6 +26,8 @@ lazy val `alert-sink` =
     `alert-sink-api`,
     `alert-sink-impl`
   )
+  .enablePlugins(GitVersioning, NoPublish)
+
 lazy val `alert-sink-api` =
   project.in(file("alert-sink-api"))
   .settings(
@@ -16,6 +35,8 @@ lazy val `alert-sink-api` =
       lagomScaladslApi
     )
   )
+  .enablePlugins(GitVersioning, ArtifactoryPublish)
+
 lazy val `alert-sink-impl` =
   project.in(file("alert-sink-impl"))
   .dependsOn(`alert-sink-api`)
@@ -23,15 +44,25 @@ lazy val `alert-sink-impl` =
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslPersistenceCassandra,
-      lagomScaladslBroker,
+      lagomScaladslKafkaBroker,
       lagomScaladslTestKit,
       macwire,
       playJsonDerivedCodecs,
       scalaTest
     )
   )
-  .enablePlugins(LagomScala)
+  .settings(dockerSettings: _*)
+  .enablePlugins(LagomScala, DockerPlugin, GitVersioning, NoPublish)
 
 lazy val macwire = "com.softwaremill.macwire" %% "macros" % "2.2.5" % "provided"
 lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.0.1" % Test
 lazy val playJsonDerivedCodecs = "org.julienrf" %% "play-json-derived-codecs" % "3.3"
+
+lazy val dockerSettings = Seq(
+  packageName in Docker := "alert-sink",
+  dockerExposedPorts := Seq(8080),
+  dockerRepository := Some("docker.ctc.com/big"),
+  dockerBaseImage := "davidcaste/debian-oracle-java:jdk8",
+  version in Docker := version.value.replaceFirst("""-SNAPSHOT""", ""),
+  dockerUpdateLatest := true
+)
