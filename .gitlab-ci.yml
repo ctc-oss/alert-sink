@@ -29,3 +29,34 @@ publish_releases:
   only:
     - /^rc-.*$/
     - /^v\d.*$/
+
+docker_branch:
+  image: docker.ctc.com/ctc/sbt:docker
+  stage: publish
+  script:
+  - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
+
+  - sbt docker:publishLocal
+  - docker tag $CI_REGISTRY_IMAGE $CI_REGISTRY_IMAGE:$CI_BUILD_REF_NAME
+  - docker push $CI_REGISTRY_IMAGE:$CI_BUILD_REF_NAME
+  - docker rmi $CI_REGISTRY_IMAGE:$CI_BUILD_REF_NAME
+  only:
+    - branches
+  except:
+    - master
+  tags:
+    - containers
+
+docker_latest:
+  image: docker.ctc.com/ctc/sbt:docker
+  stage: publish
+  script:
+  - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
+
+  - sbt docker:publishLocal
+  - docker push $CI_REGISTRY_IMAGE
+  - docker rmi $CI_REGISTRY_IMAGE
+  only:
+    - master
+  tags:
+    - containers
