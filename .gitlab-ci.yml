@@ -8,10 +8,6 @@ unit_test:
   stage: test
   script:
     - sbt coverage test
-  only:
-    - branches
-  except:
-    - master
 
 publish_snapshots:
   stage: publish
