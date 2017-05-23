@@ -46,7 +46,7 @@ class AlertSinkEntity extends PersistentEntity {
           }
       }.onEvent {
         case (AlertEvent(_, _), state) ⇒
-          log.debug("logged alert")
+          log.info("logged alert")
           state
       }
   }

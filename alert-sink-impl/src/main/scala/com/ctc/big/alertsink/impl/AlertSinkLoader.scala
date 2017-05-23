@@ -1,5 +1,6 @@
 package com.ctc.big.alertsink.impl
 
+import akka.stream.ActorMaterializer
 import com.ctc.big.alertsink.api.AlertSinkService
 import com.lightbend.lagom.scaladsl.api.ServiceLocator
 import com.lightbend.lagom.scaladsl.api.ServiceLocator.NoServiceLocator
@@ -44,4 +45,13 @@ abstract class AlertSinkApplication(context: LagomApplicationContext)
   extends LagomApplication(context)
           with AlertSinkComponents
           with LagomKafkaComponents
-          with AhcWSComponents
+          with AhcWSComponents {
+
+  implicit val system = actorSystem
+  implicit val mat = ActorMaterializer()
+
+  lazy val elasticSearch = serviceClient.implement[Elasticsearch]
+  lazy val svc = serviceClient.implement[AlertSinkService]
+
+  wire[AlertEventIndexer]
+}

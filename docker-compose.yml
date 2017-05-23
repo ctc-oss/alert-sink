@@ -8,6 +8,8 @@ services:
       environment:
         ZOOKEEPER_CLIENT_PORT: 2181
         ZOOKEEPER_TICK_TIME: 500
+      logging:
+        driver: none
 
   kafka:
     image: confluentinc/cp-kafka:3.1.2
@@ -20,6 +22,8 @@ services:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://172.17.0.1:9092
+    logging:
+      driver: none
 
   kafka-trifecta:
     image: janschultecom/docker-trifecta
@@ -30,6 +34,16 @@ services:
       - zookeeper
     environment:
       ZK_HOST: zookeeper:2181
+
+  elasticsearch:
+    image: registry.access.redhat.com/openshift3/logging-elasticsearch:latest
+    ports:
+      - 9200:9200
+    environment:
+      CLUSTER_NAME: "big"
+      http.host: "0.0.0.0"
+      transport.host: "127.0.0.1"
+      xpack.security.enabled: "false"
 
   mysql:
     image: docker.ctc.com/openshift/akka-persistence-mysql

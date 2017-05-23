@@ -1,0 +1,7 @@
+#!/bin/bash
+
+readonly sink_uri="${SINK_URI:-localhost:9200}"
+
+# ExternalEvent(title: String, url: String, text: String, metadata: AlertMeta)
+curl "$sink_uri/api/alert/$1" -H 'content-type: application/json' \
+-d '{"title":"bazzz","url":"barrrr","text":"fooo","metadata":{"keywords":["kw"],"coordinates":{"x":"100","y":"-100"}}}'

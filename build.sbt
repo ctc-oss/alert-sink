@@ -71,4 +71,5 @@ lazy val dockerSettings = Seq(
 
 lagomKafkaEnabled in ThisBuild := false
 lagomKafkaAddress in ThisBuild := "172.17.0.1:9092"
+lagomUnmanagedServices in ThisBuild += ("elasticsearch" -> "http://172.17.0.1:9200")
 lagomCassandraEnabled in ThisBuild := false

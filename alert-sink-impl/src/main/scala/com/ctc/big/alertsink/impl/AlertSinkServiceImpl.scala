@@ -26,18 +26,7 @@ class AlertSinkServiceImpl(registry: PersistentEntityRegistry)(implicit ec: Exec
 
   override def alerts(): Topic[Alert] = {
     TopicProducer.singleStreamWithOffset { offset ⇒
-      registry.eventStream(AlertEvent.Tag, offset)
-      .map(ev ⇒ ae2a2(ev.event) → offset)
+      registry.eventStream(AlertEvent.Tag, offset).map(ev ⇒ ev.event.alert → offset)
     }
   }
-
-  private def ae2a2(a: AlertEvent): Alert = Alert(
-    a.uuid,
-    a.alert.source,
-    a.alert.timestamp,
-    a.alert.url,
-    a.alert.title,
-    a.alert.text,
-    a.alert.metadata
-  )
 }
