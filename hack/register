@@ -1,0 +1,6 @@
+#!/bin/bash
+
+readonly sink_uri="${SINK_URI:-localhost:9000}"
+
+# Application(name: String)
+curl -s "$sink_uri/api/app" -H 'content-type: application/json' -d '{"name":"apppz"}'
