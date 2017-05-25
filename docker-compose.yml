@@ -1,0 +1,37 @@
+version: '2'
+services:
+  zookeeper:
+      image: confluentinc/cp-zookeeper:3.1.2
+      hostname: zookeeper
+      ports:
+        - 2181:2181
+      environment:
+        ZOOKEEPER_CLIENT_PORT: 2181
+        ZOOKEEPER_TICK_TIME: 500
+
+  kafka:
+    image: confluentinc/cp-kafka:3.1.2
+    hostname: kafka
+    ports:
+      - 9092:9092
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://172.17.0.1:9092
+
+  kafka-trifecta:
+    image: janschultecom/docker-trifecta
+    hostname: kafka-manager
+    ports:
+      - 9002:9000
+    links:
+      - zookeeper
+    environment:
+      ZK_HOST: zookeeper:2181
+
+  mysql:
+    image: docker.ctc.com/openshift/akka-persistence-mysql
+    ports:
+      - 3306:3306
