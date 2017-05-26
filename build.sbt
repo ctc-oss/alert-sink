@@ -44,11 +44,12 @@ lazy val `alert-sink-impl` =
   .settings(lagomForkedTestSettings: _*)
   .settings(
     libraryDependencies ++= Seq(
-      lagomScaladslPersistenceCassandra,
+      lagomScaladslPersistenceJdbc,
       lagomScaladslKafkaBroker,
       lagomScaladslTestKit,
       macwire,
       playJsonDerivedCodecs,
+      "mysql" % "mysql-connector-java" % "6.0.5",
       scalaTest
     )
   )
@@ -67,3 +68,7 @@ lazy val dockerSettings = Seq(
   version in Docker := version.value.replaceFirst("""-SNAPSHOT""", ""),
   dockerUpdateLatest := true
 )
+
+lagomKafkaEnabled in ThisBuild := false
+lagomKafkaAddress in ThisBuild := "172.17.0.1:9092"
+lagomCassandraEnabled in ThisBuild := false
