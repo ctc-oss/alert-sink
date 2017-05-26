@@ -1,0 +1,201 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: ava-alert-sink
+message: |-
+  The following service(s) have been created in your project: ${DISPLAY_NAME}.
+
+     Kafka Broker: ${KAFKA_BROKER}
+    Database Host: ${PERSIST_HOST}
+    Database Name: ${PERSIST_DB_NAME}
+
+  This service will be exposed with external route to http://${EXT_HOSTNAME}.openshift.ctc.com
+objects:
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    labels:
+      app: ${DISPLAY_NAME}
+    name: ${DISPLAY_NAME}
+  spec:
+    nodeSelector: null
+    output:
+      to:
+        kind: ImageStreamTag
+        name: ${DISPLAY_NAME}:latest
+    postCommit: {}
+    resources: {}
+    runPolicy: Serial
+    source:
+      git:
+        uri: https://gitorious.ctc.com/gitlab/big/alert-sink.git
+        ref: ${SOURCE_REPOSITORY_REF}
+      sourceSecret:
+        name: ${DISPLAY_NAME}-gitorious
+      type: Git
+    strategy:
+      sourceStrategy:
+        env:
+        - name: SBT_SUBPROJECT
+          value: alert-sink-impl
+        forcePull: true
+        from:
+          kind: DockerImage
+          name: docker.ctc.com/ctc/sbts2i
+      type: Source
+    triggers:
+    - generic:
+        secret: 6ma3gfBb5Cicm2uy48Tm
+      type: Generic
+    - type: ConfigChange
+  status:
+    lastVersion: 0
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    name: ${DISPLAY_NAME}
+    labels:
+      application: ${DISPLAY_NAME}
+  spec:
+    dockerImageRepository: ''
+    tags:
+    - name: latest
+- apiVersion: v1
+  kind: Secret
+  data:
+    ca.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUZPVENDQXlHZ0F3SUJBZ0lRQU5KenJaOVNMTHhNc05DV2Y3cjFSREFOQmdrcWhraUc5dzBCQVFVRkFEQXYKTVF3d0NnWURWUVFHRXdOamIyMHhEREFLQmdOVkJBb1RBMk4wWXpFUk1BOEdBMVVFQXhNSVkyRXRjbTl2ZERFdwpIaGNOTURneE1ESXlNVFF6TWpNMFdoY05Namd4TURJeU1UUTBNak14V2pBdk1Rd3dDZ1lEVlFRR0V3TmpiMjB4CkREQUtCZ05WQkFvVEEyTjBZekVSTUE4R0ExVUVBeE1JWTJFdGNtOXZkREV3Z2dJaU1BMEdDU3FHU0liM0RRRUIKQVFVQUE0SUNEd0F3Z2dJS0FvSUNBUUMyRHJ0SXRDcmlGSkhxUkxYdWYranUvMXliWUg3YktxRm1EcWZvTkpidgpsWEVFWmNCTmhNaU8zc3RQVEI0YmFPaHkzVGtnVDBpcDJsTVJhODBKbjMwdGxkWEtyaWErUk9zWTlYMi9ETVd0CkoreUtVcVRIYXdzQ29VdjdXOXpiK2dIMDhXUjh1RFUySE1wN28xNW8xTm1xTmxYSWs0VWVNOEhJSld5bWFTd1oKdU9hTldBVElnNW82RHhPYVJ0QXJYRnNYdzdUSHpGYndDQjRhRGliWkxlbG5OMS92eHNoWXZvUERJVDFkUjhRdwpJaWZzdVlod1FTY1JMc0k1c3hUVzBMNGNmQUtRbXVrT2RYdmkvVjJ6SlM3VE5NZXlPUUd1ZlBiWWNJVTVGWEhUCnRHYXljYkpZUlM3dnR4ZUxrREdiam5VRWpDQy9lU0M3L3dUMzYzYis1SlF1WS9Kc0RUYnFYOFRqTDArcmMycVEKVWppS3lrZHlma0d3bkh3Y2FRbGZYeXlhMkoxaHhSeWFOMjBDUGQwN21zTjZiSWtvSm4reE52NmU4SlJNVHBGTApMNTEvdVJQRUIzdzBlWFhEdHFoSlhmTFFwbGpUbUYrVGxQOWpYV05wY0VjOHA0K1BPMGwrMkdpUlVtMEZOZllOCkJPQ2hleC9rTWsyeXhORjVFalE1YnkvZUd3MTJGaGEzSzBERU5EaXdmSkhKdGRja043YWJ2eldiQlBnN1o2K1UKa2JnT1VQaHhLandDWTAvaGd1dXlXTStMVHB4c0JrWVlNQWV2RjNrc3dzZ1RaR2JCeDRDUHdlN0hSMXFIZ3A5SQpLNjFYczBsdlNUTzlacE4rQXNCVTlDNkNybjZTcG5HTEUvTHdHcTRSYThTRG5XeWZZaVN1RXJPbTdWMXFvVDdFCjh3SURBUUFCbzFFd1R6QUxCZ05WSFE4RUJBTUNBWVl3RHdZRFZSMFRBUUgvQkFVd0F3RUIvekFkQmdOVkhRNEUKRmdRVWl6YXdqU3JDeFZIWDFMM1lEVXBEb1JrZDBiOHdFQVlKS3dZQkJBR0NOeFVCQkFNQ0FRQXdEUVlKS29aSQpodmNOQVFFRkJRQURnZ0lCQUdzYWRwb2crQ2VFd05rQTd2NXhXa01KY1hRRkh4ZG50UjJrZi9EL1VpdUEySkgvCmxCdGJPRFBIUFg2dkxWUzlJSFdOY3A3dmJGNUl3cmg4cytrVDQ3RXl6dmtGRk9pT1o0WlhCVEVoRWtvT05MdzMKT2RmKzR1YmJpaUFrRU5iRjE5TXh5cCtEZDhWTjZVMjlUeU9GMGEvZWpsVUpGWmlDVXRKY2dmU010YnpOYkkyNQpHNEVEdmNJT2E5cmh4KzZaOEdybE9kU3hva05pS0o3V3RkZ1E4MWI0cnV1YzhVYWVORy8reEJMZkVpR0pIUHhtClkyMTRRY0U0NWl6NXM0YmZSSEpBOUJya0hVcEFJNXFtSlFmSWhyNFZ5ZXd5dzdZSDcrSWRUbkJTL2paT3pLZG0KRFlOTGQ4a09ESEMzTEs4dXZnRGZUd2tKQVhQR083aCtsM2U3RGpIU0JwOHljTXpTUGx5Z29HTldmZnBSZnJTUgpUbkVYSGlhWDNPQ2VJWlZKUjI0R3JqVisrcVVxRkxJUUcxOU1RRVQyWnhlaHpJYkpCMDlEaytVQ1lucWdwNlBLCjRJL2ViL0I4VmMvcTNkWEpYV1pxS3NTQ1J2OUdSN092ZHFqaVQ0Mmc4bFFoanB3V1F1TnVqZnZSTENYcVkvdTQKeTVNbWtwYXVpODVUb0ZmOGhKSVRvU2dWUUR1MktZNjcwMGVPZEhCWVZHZUhZcDk3N3I2cEhsMTBMYzdmV3Q0MwppSTFrSzRFWnhtVVJWVW9Za29iN2ZLdXhhL0g4Q0NFL1FFeDkxTDBMVFJCVm9YTGJzcmYvRE9TWldUQzFoVHNOClNiQlhoTE1XZ3BpMDkzUWxEd3JlZng4bkFkNjN0OHVLY0pRVXRpMTdURlFzNWF5Q2VZNWQwd2lJY1V5eQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+    password: ""
+    username: ""
+  metadata:
+    name: ${DISPLAY_NAME}-gitorious
+  type: kubernetes.io/basic-auth
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: ${DISPLAY_NAME}
+    name: ${DISPLAY_NAME}
+  spec:
+    ports:
+    - name: 9000-tcp
+      port: 9000
+      protocol: TCP
+      targetPort: 9000
+    selector:
+      app: ${DISPLAY_NAME}
+      deploymentconfig: ${DISPLAY_NAME}
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    generation: 1
+    labels:
+      app: ${DISPLAY_NAME}
+    name: ${DISPLAY_NAME}
+  spec:
+    replicas: 1
+    selector:
+      app: ${DISPLAY_NAME}
+      deploymentconfig: ${DISPLAY_NAME}
+    strategy:
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app: ${DISPLAY_NAME}
+          deploymentconfig: ${DISPLAY_NAME}
+      spec:
+        containers:
+        - env:
+          - name: SBT_SUBPROJECT
+            value: alert-sink-impl
+          - name: KAFKA_BROKER
+            value: ${KAFKA_BROKER}
+          - name: PERSIST_HOST
+            value: ${PERSIST_HOST}
+          - name: PERSIST_DB_NAME
+            value: ${PERSIST_DB_NAME}
+          image: ""
+          imagePullPolicy: Always
+          name: ${DISPLAY_NAME}
+          ports:
+          - containerPort: 9000
+            protocol: TCP
+          resources: {}
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+    test: false
+    triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - ${DISPLAY_NAME}
+        from:
+          kind: ImageStreamTag
+          name: ${DISPLAY_NAME}:latest
+      type: ImageChange
+  status: {}
+- apiVersion: v1
+  kind: Route
+  metadata:
+    name: ${DISPLAY_NAME}
+  spec:
+    host: ${EXT_HOSTNAME}.openshift.ctc.com
+    to:
+      kind: Service
+      name: ${DISPLAY_NAME}
+      weight: 100
+    port:
+      targetPort: 9000-tcp
+    wildcardPolicy: None
+  status:
+    ingress:
+      - host: ${EXT_HOSTNAME}.openshift.ctc.com
+        routerName: router
+        wildcardPolicy: None
+
+parameters:
+- name: DISPLAY_NAME
+  displayName: Name
+  description: The name given to components of this deployment.
+  value: alert-sink
+  required: true
+- name: SOURCE_REPOSITORY_REF
+  displayName: Git Reference
+  description: Set this to a branch name, tag or other ref of your repository if you are not using the default branch.
+  value: master
+  required: true
+- name: KAFKA_BROKER
+  displayName: Kafka Broker
+  description: The Kafka broker URI.
+  value: kafkanetes:9092
+  required: true
+- name: PERSIST_HOST
+  displayName: Database Host
+  description: The service name hosting the database.
+  value: mysql
+  required: true
+- name: PERSIST_DB_NAME
+  displayName: Database Name
+  description: The name of the persistence database.
+  value: alert-sink
+  required: true
+- name: EXT_HOSTNAME
+  displayName: External Hostname
+  description: The route exposed subdomain for this service (prepended to openshift.ctc.com).
+  value: alert-sink
+  required: true
