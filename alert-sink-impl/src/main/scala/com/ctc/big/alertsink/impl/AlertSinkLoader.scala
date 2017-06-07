@@ -24,7 +24,7 @@ class AlertSinkLoader extends LagomApplicationLoader {
       val esuri = elasticsearchUri
       logger.warn(s"elasticsearch static service locator uri: $esuri")
 
-      override def serviceLocator: ServiceLocator = new StaticServiceLocator(URI.create(esuri), circuitBreakers)
+      override def serviceLocator: ServiceLocator = new StaticServiceLocator(elasticsearchUri, circuitBreakers)
     }
 
   override def loadDevMode(context: LagomApplicationContext): LagomApplication =
@@ -44,7 +44,12 @@ trait AlertSinkComponents extends LagomServerComponents with JdbcPersistenceComp
   override lazy val lagomServer = serverFor[AlertSinkService](wire[AlertSinkServiceImpl])
   override lazy val jsonSerializerRegistry = AlertSinkSerializerRegistry
 
-  def elasticsearchUri = configuration.getString("elasticsearch.uri")
+  def elasticsearchUri = {
+    configuration.getString("elasticsearch.uri") match {
+      case Some(uri) ⇒ URI.create(uri)
+      case None ⇒ throw new RuntimeException("elasticsearch.uri not found in configuration")
+    }
+  }
 
   persistentEntityRegistry.register(wire[AlertSinkEntity])
 }
