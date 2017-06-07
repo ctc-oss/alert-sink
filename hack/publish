@@ -1,6 +1,6 @@
 #!/bin/bash
 
-readonly sink_uri="${SINK_URI:-localhost:9200}"
+readonly sink_uri="${SINK_URI:-localhost:9000}"
 
 # ExternalEvent(title: String, url: String, text: String, metadata: AlertMeta)
 curl "$sink_uri/api/alert/$1" -H 'content-type: application/json' \
