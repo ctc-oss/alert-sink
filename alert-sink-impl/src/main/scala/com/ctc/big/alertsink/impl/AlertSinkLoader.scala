@@ -44,7 +44,7 @@ trait AlertSinkComponents extends LagomServerComponents with JdbcPersistenceComp
   override lazy val lagomServer = serverFor[AlertSinkService](wire[AlertSinkServiceImpl])
   override lazy val jsonSerializerRegistry = AlertSinkSerializerRegistry
 
-  def elasticsearchUri = configuration.getString("elasticsearch.uri").getOrElse("172.17.0.1:9200")
+  def elasticsearchUri = configuration.getString("elasticsearch.uri")
 
   persistentEntityRegistry.register(wire[AlertSinkEntity])
 }
