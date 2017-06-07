@@ -1,12 +1,9 @@
 package com.ctc.big.alertsink.impl
 
-import java.net.URI
-
 import akka.stream.ActorMaterializer
 import com.ctc.big.alertsink.api.AlertSinkService
-import com.lightbend.lagom.scaladsl.api.ServiceLocator
 import com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaComponents
-import com.lightbend.lagom.scaladsl.client.{CircuitBreakerComponents, StaticServiceLocator}
+import com.lightbend.lagom.scaladsl.client.{CircuitBreakerComponents, ConfigurationServiceLocatorComponents}
 import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
 import com.lightbend.lagom.scaladsl.persistence.jdbc.JdbcPersistenceComponents
 import com.lightbend.lagom.scaladsl.server._
@@ -20,18 +17,10 @@ import scala.concurrent.ExecutionContext
 class AlertSinkLoader extends LagomApplicationLoader {
 
   override def load(context: LagomApplicationContext): LagomApplication =
-    new AlertSinkApplication(context) {
-      val esuri = elasticsearchUri
-      logger.warn(s"elasticsearch static service locator uri: $esuri")
-
-      override def serviceLocator: ServiceLocator = new StaticServiceLocator(elasticsearchUri, circuitBreakers)
-    }
+    new AlertSinkApplication(context) with ConfigurationServiceLocatorComponents
 
   override def loadDevMode(context: LagomApplicationContext): LagomApplication =
-    new AlertSinkApplication(context) with LagomDevModeComponents {
-      val esuri = elasticsearchUri
-      logger.warn(s"elasticsearch static service locator uri: $esuri")
-    }
+    new AlertSinkApplication(context) with LagomDevModeComponents
 
   override def describeServices = List(
     readDescriptor[AlertSinkService]
@@ -43,13 +32,6 @@ trait AlertSinkComponents extends LagomServerComponents with JdbcPersistenceComp
 
   override lazy val lagomServer = serverFor[AlertSinkService](wire[AlertSinkServiceImpl])
   override lazy val jsonSerializerRegistry = AlertSinkSerializerRegistry
-
-  def elasticsearchUri = {
-    configuration.getString("elasticsearch.uri") match {
-      case Some(uri) ⇒ URI.create(uri)
-      case None ⇒ throw new RuntimeException("elasticsearch.uri not found in configuration")
-    }
-  }
 
   persistentEntityRegistry.register(wire[AlertSinkEntity])
 }
