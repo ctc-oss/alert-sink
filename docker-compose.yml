@@ -36,7 +36,7 @@ services:
       ZK_HOST: zookeeper:2181
 
   elasticsearch:
-    image: registry.access.redhat.com/openshift3/logging-elasticsearch:latest
+    image: lbischof/elasticsearch
     ports:
       - 9200:9200
     environment:
@@ -48,4 +48,15 @@ services:
   mysql:
     image: docker.ctc.com/openshift/akka-persistence-mysql
     ports:
-      - 3306:3306
+      - 3306
+
+  alert-sink:
+    image: docker.ctc.com/big/alert-sink:elasticsearch
+    ports:
+      - 9000:9000
+    links:
+      - mysql
+      - kafka
+    environment:
+      PERSIST_HOST: mysql
+      KAFKA_BROKER: kafka:9092
