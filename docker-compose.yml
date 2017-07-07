@@ -48,15 +48,24 @@ services:
   mysql:
     image: docker.ctc.com/openshift/akka-persistence-mysql
     ports:
-      - 3306
+      - 3306:3306
 
-  alert-sink:
-    image: docker.ctc.com/big/alert-sink:elasticsearch
+#  alert-sink:
+#    image: docker.ctc.com/big/alert-sink:elasticsearch
+#    ports:
+#      - 9000:9000
+#    links:
+#      - mysql
+#      - kafka
+#    environment:
+#      PERSIST_HOST: mysql
+#      KAFKA_BROKER: kafka:9092
+
+  kibana:
+    image: lbischof/kibana
     ports:
-      - 9000:9000
+      - 5601:5601
     links:
-      - mysql
-      - kafka
+      - elasticsearch
     environment:
-      PERSIST_HOST: mysql
-      KAFKA_BROKER: kafka:9092
+      ELASTICSEARCH_SERVICE_HOST: elasticsearch
