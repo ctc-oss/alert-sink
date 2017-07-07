@@ -22,9 +22,7 @@ class AlertSinkLoader extends LagomApplicationLoader {
   override def loadDevMode(context: LagomApplicationContext): LagomApplication =
     new AlertSinkApplication(context) with LagomDevModeComponents
 
-  override def describeServices = List(
-    readDescriptor[AlertSinkService]
-  )
+  override def describeService = Some(readDescriptor[AlertSinkService])
 }
 
 trait AlertSinkComponents extends LagomServerComponents with JdbcPersistenceComponents with HikariCPComponents {

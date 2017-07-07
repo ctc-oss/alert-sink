@@ -18,7 +18,7 @@ class AlertSinkEntitySpec extends WordSpec with Matchers with BeforeAndAfterAll 
     TestKit.shutdownActorSystem(system)
   }
 
-  private def withTestDriver(block: PersistentEntityTestDriver[AlertSinkCommand[_], AlertSinkEvent, AlertSinkState] => Unit): Unit = {
+  private def withTestDriver(block: PersistentEntityTestDriver[AlertSinkCommand[_], AlertSinkEvent, AlertSinkState] ⇒ Unit): Unit = {
     val driver = new PersistentEntityTestDriver(system, new AlertSinkEntity {
       override def uuid = TestUUID
     }, EntityID)
@@ -32,12 +32,12 @@ class AlertSinkEntitySpec extends WordSpec with Matchers with BeforeAndAfterAll 
   val externalEvent = ExternalEvent("foo", "bar", "baz", AlertMeta(List.empty, Coordinates("up", "down", None)))
 
   "alert-sink entity" should {
-    "accept application registration" in withTestDriver { driver =>
+    "accept application registration" in withTestDriver { driver ⇒
       val outcome = driver.run(RegisterApplication("test"))
       outcome.replies should contain only TestUUID
     }
 
-    "log an event to existing application" in withTestDriver { driver =>
+    "log an event to existing application" in withTestDriver { driver ⇒
       val outcome1 = driver.run(RegisterApplication("test"))
       outcome1.replies should contain only TestUUID
       val outcome2 = driver.run(GenerateAlert(externalEvent))

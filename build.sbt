@@ -49,6 +49,7 @@ lazy val `alert-sink-impl` =
       lagomScaladslTestKit,
       macwire,
       playJsonDerivedCodecs,
+      "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
       "mysql" % "mysql-connector-java" % "6.0.5",
       scalaTest
     )

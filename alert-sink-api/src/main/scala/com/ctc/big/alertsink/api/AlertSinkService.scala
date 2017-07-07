@@ -1,5 +1,6 @@
 package com.ctc.big.alertsink.api
 
+import akka.NotUsed
 import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.api.transport.Method
 import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
@@ -22,6 +23,7 @@ trait AlertSinkService extends Service {
    * @return id and token of Application
    */
   def register(): ServiceCall[Application, ApplicationRegistration]
+  def application(id: String): ServiceCall[NotUsed, Application]
 
   /**
    * @return UUID of logged Alert as String
@@ -35,7 +37,8 @@ trait AlertSinkService extends Service {
     import Service._
     named("alert-sink").withCalls(
       restCall(Method.POST, "/api/app", register _),
-      restCall(Method.POST, "/api/alert/:id", ingest _)
+      restCall(Method.POST, "/api/alert/:id", ingest _),
+      restCall(Method.GET, "/api/application/:id", application _)
     ).withTopics(
       topic(AlertSinkService.AlertsTopic, alerts _)
     ).withAutoAcl(true)
