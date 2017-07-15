@@ -3,7 +3,7 @@ package com.ctc.big.alertsink.impl
 import java.time.LocalDateTime
 import java.util.UUID
 
-import com.ctc.big.alertsink.api.{Alert, ExternalEvent}
+import com.ctc.big.alertsink.api.{Alert, Application, ExternalEvent}
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.ReplyType
 import com.lightbend.lagom.scaladsl.persistence._
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
@@ -27,26 +27,29 @@ class AlertSinkEntity extends PersistentEntity {
   override def initialState: AlertSinkState = AlertSinkState.notready
 
   override def behavior: Behavior = {
-    case AlertSinkState(None) ⇒
+    case AlertSinkState(None, None) ⇒
       Actions().onCommand[RegisterApplication, String] {
         case (RegisterApplication(name), ctx, _) ⇒
           ctx.thenPersist(ApplicationRegistered(name, uuid)) { e ⇒
             ctx.reply(e.token)
           }
       }.onEvent {
-        case (ApplicationRegistered(_, token), _) ⇒ AlertSinkState(Some(token))
+        case (ApplicationRegistered(name, token), _) ⇒ AlertSinkState(Some(name), Some(token))
       }
 
-    case AlertSinkState(Some(_)) ⇒
+    case AlertSinkState(Some(name), Some(_)) ⇒
       Actions().onCommand[GenerateAlert, Alert] {
         case (GenerateAlert(ee), ctx, _) ⇒
           val alert = Alert(uuid, entityId, LocalDateTime.now.toString, ee.url, ee.title, ee.text, ee.metadata)
           ctx.thenPersist(AlertEvent(uuid, alert)) { e ⇒
             ctx.reply(e.alert)
           }
+      }.onReadOnlyCommand[AppInfo, Application] {
+        case (AppInfo(), ctx, _) ⇒
+          ctx.reply(Application(name))
       }.onEvent {
         case (AlertEvent(_, _), state) ⇒
-          log.debug("logged alert")
+          log.debug(s"processed alert in {}", state.name)
           state
       }
   }
@@ -89,6 +92,11 @@ object RegisterApplication {
   implicit val format: Format[RegisterApplication] = Json.format
 }
 
+case class AppInfo() extends AlertSinkCommand[Application]
+object AppInfo {
+  implicit val format: Format[Application] = Json.format
+}
+
 case class GenerateAlert(ee: ExternalEvent) extends AlertSinkCommand[Alert]
 object GenerateAlert {
   implicit val format: Format[GenerateAlert] = Json.format
@@ -100,9 +108,9 @@ object GenerateAlert {
  *
  */
 
-case class AlertSinkState(token: Option[String])
+case class AlertSinkState(name: Option[String], token: Option[String])
 object AlertSinkState {
-  val notready = AlertSinkState(None)
+  val notready = AlertSinkState(None, None)
   implicit val format: Format[AlertSinkState] = Json.format
 }
 

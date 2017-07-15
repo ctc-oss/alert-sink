@@ -24,7 +24,7 @@ class AlertSinkServiceSpec extends AsyncWordSpec with Matchers with BeforeAndAft
   "alert-sink service" should {
 
     "accept registration" in {
-      client.register().invoke(Application("foo")).map { answer =>
+      client.register().invoke(Application("foo")).map { answer ⇒
         answer should matchPattern {
           case ApplicationRegistration(_, _) ⇒
         }

@@ -49,6 +49,7 @@ lazy val `alert-sink-impl` =
       lagomScaladslTestKit,
       macwire,
       playJsonDerivedCodecs,
+      "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
       "mysql" % "mysql-connector-java" % "6.0.5",
       scalaTest
     )
@@ -71,4 +72,5 @@ lazy val dockerSettings = Seq(
 
 lagomKafkaEnabled in ThisBuild := false
 lagomKafkaAddress in ThisBuild := "172.17.0.1:9092"
+lagomUnmanagedServices in ThisBuild += ("elasticsearch" -> "http://172.17.0.1:9200")
 lagomCassandraEnabled in ThisBuild := false

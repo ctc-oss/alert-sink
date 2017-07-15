@@ -8,6 +8,8 @@ services:
       environment:
         ZOOKEEPER_CLIENT_PORT: 2181
         ZOOKEEPER_TICK_TIME: 500
+      logging:
+        driver: none
 
   kafka:
     image: confluentinc/cp-kafka:3.1.2
@@ -20,6 +22,8 @@ services:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://172.17.0.1:9092
+    logging:
+      driver: none
 
   kafka-trifecta:
     image: janschultecom/docker-trifecta
@@ -31,7 +35,37 @@ services:
     environment:
       ZK_HOST: zookeeper:2181
 
+  elasticsearch:
+    image: lbischof/elasticsearch
+    ports:
+      - 9200:9200
+    environment:
+      CLUSTER_NAME: "big"
+      http.host: "0.0.0.0"
+      transport.host: "127.0.0.1"
+      xpack.security.enabled: "false"
+
   mysql:
     image: docker.ctc.com/openshift/akka-persistence-mysql
     ports:
       - 3306:3306
+
+#  alert-sink:
+#    image: docker.ctc.com/big/alert-sink:elasticsearch
+#    ports:
+#      - 9000:9000
+#    links:
+#      - mysql
+#      - kafka
+#    environment:
+#      PERSIST_HOST: mysql
+#      KAFKA_BROKER: kafka:9092
+
+  kibana:
+    image: lbischof/kibana
+    ports:
+      - 5601:5601
+    links:
+      - elasticsearch
+    environment:
+      ELASTICSEARCH_SERVICE_HOST: elasticsearch
