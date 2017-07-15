@@ -1,14 +1,11 @@
 package com.ctc.big.alertsink.impl
 
-import java.util.UUID
-
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Flow, Sink}
 import com.ctc.big.alertsink.api.{Alert, AlertSinkService}
 import com.typesafe.scalalogging.LazyLogging
 
 import scala.concurrent.ExecutionContext
-import scala.util.{Failure, Success}
 
 
 class AlertEventIndexer(sink: AlertSinkService, es: Elasticsearch)(implicit mat: ActorMaterializer, ec: ExecutionContext) extends LazyLogging {
@@ -16,17 +13,14 @@ class AlertEventIndexer(sink: AlertSinkService, es: Elasticsearch)(implicit mat:
 
   sink.alerts()
   .subscribe.withGroupId("alert-indexer").atMostOnceSource.via(
-    Flow[Alert].mapAsync(1) { a ⇒
-      val appQuery = sink.application(a.source).invoke()
-      appQuery.onComplete {
-        case Success(app) ⇒
-          logger.debug("indexing {}", app)
-          es.updateIndex(s"alert-${app.name}", UUID.randomUUID.toString).invoke(UpdateIndexAlert(a))
-
-        case Failure(ex) ⇒
-          logger.error(s"failed to index alert, $a", ex)
-      }
-      appQuery
+    Flow[Alert].mapAsync(1)(alert ⇒
+      sink.application(alert.source).invoke().map(_ → alert)
+    ).mapAsync(1) { aa ⇒
+      es.updateIndex(s"alert-${aa._1.name}", aa._2.id)
+      .invoke(UpdateIndexAlert(aa._2))
+      .map(_ ⇒ aa)
     }
-  ).runWith(Sink.foreach(println))
+  ).runWith(Sink.foreach(aa ⇒
+    logger.info("indexed alert [{}] to app {}", aa._2.id, aa._1.name)
+  ))
 }
