@@ -12,14 +12,14 @@ unit_test:
 publish_snapshots:
   stage: publish
   script:
-    - sbt publish
+    - sbt publishArtifacts
   only:
     - master
 
 publish_releases:
   stage: publish
   script:
-    - sbt publish
+    - sbt publishArtifacts
   only:
     - tags
   only:
@@ -35,6 +35,8 @@ docker_branch:
   - sbt docker:publishLocal
   - docker tag $CI_REGISTRY_IMAGE $CI_REGISTRY_IMAGE:$CI_BUILD_REF_NAME
   - docker push $CI_REGISTRY_IMAGE:$CI_BUILD_REF_NAME
+
+  - docker rmi $CI_REGISTRY_IMAGE
   - docker rmi $CI_REGISTRY_IMAGE:$CI_BUILD_REF_NAME
   only:
     - branches
