@@ -27,7 +27,7 @@ lazy val `alert-sink` =
     `alert-sink-api`,
     `alert-sink-impl`
   )
-  .enablePlugins(GitVersioning, NoPublish)
+  .enablePlugins(GitVersioning)
 
 lazy val `alert-sink-api` =
   project.in(file("alert-sink-api"))
@@ -36,7 +36,7 @@ lazy val `alert-sink-api` =
       lagomScaladslApi
     )
   )
-  .enablePlugins(GitVersioning, ArtifactoryPublish)
+  .enablePlugins(GitVersioning, ArtifactoryPlugin)
 
 lazy val `alert-sink-impl` =
   project.in(file("alert-sink-impl"))
@@ -55,7 +55,7 @@ lazy val `alert-sink-impl` =
     )
   )
   .settings(dockerSettings: _*)
-  .enablePlugins(LagomScala, DockerPlugin, GitVersioning, NoPublish)
+  .enablePlugins(LagomScala, OpenShiftPlugin, GitVersioning)
 
 lazy val macwire = "com.softwaremill.macwire" %% "macros" % "2.2.5" % "provided"
 lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.0.1" % Test
@@ -63,11 +63,9 @@ lazy val playJsonDerivedCodecs = "org.julienrf" %% "play-json-derived-codecs" % 
 
 lazy val dockerSettings = Seq(
   packageName in Docker := "alert-sink",
-  dockerExposedPorts := Seq(8080),
-  dockerRepository := Some("docker.ctc.com/big"),
-  dockerBaseImage := "davidcaste/debian-oracle-java:jdk8",
-  version in Docker := version.value.replaceFirst("""-SNAPSHOT""", ""),
-  dockerUpdateLatest := true
+  version in Docker := "latest",
+  dockerExposedPorts := Seq(9000),
+  dockerRepository := Some("docker.ctc.com/big")
 )
 
 lagomKafkaEnabled in ThisBuild := false

@@ -1,22 +1,22 @@
 version: '2'
 services:
   zookeeper:
-      image: confluentinc/cp-zookeeper:3.1.2
-      hostname: zookeeper
-      ports:
-        - 2181:2181
-      environment:
-        ZOOKEEPER_CLIENT_PORT: 2181
-        ZOOKEEPER_TICK_TIME: 500
-      logging:
-        driver: none
+    image: confluentinc/cp-zookeeper:3.1.2
+    hostname: zookeeper
+    ports:
+      - 2181:2181
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 500
+    logging:
+      driver: none
 
   kafka:
     image: confluentinc/cp-kafka:3.1.2
     hostname: kafka
     ports:
       - 9092:9092
-    depends_on:
+    links:
       - zookeeper
     environment:
       KAFKA_BROKER_ID: 1
@@ -50,16 +50,16 @@ services:
     ports:
       - 3306:3306
 
-#  alert-sink:
-#    image: docker.ctc.com/big/alert-sink:elasticsearch
-#    ports:
-#      - 9000:9000
-#    links:
-#      - mysql
-#      - kafka
-#    environment:
-#      PERSIST_HOST: mysql
-#      KAFKA_BROKER: kafka:9092
+  alert-sink:
+    image: docker.ctc.com/big/alert-sink
+    ports:
+      - 9000:9000
+    links:
+      - mysql
+      - kafka
+    environment:
+      PERSIST_HOST: mysql
+      KAFKA_BROKER: kafka:9092
 
   kibana:
     image: lbischof/kibana
