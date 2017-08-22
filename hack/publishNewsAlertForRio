@@ -1,0 +1,11 @@
+#!/bin/bash
+
+readonly sink_uri="${SINK_URI:-localhost:9000}"
+
+# ExternalEvent(title: String, url: String, text: String, metadata: AlertMeta)
+
+echo curl "$sink_uri/api/alert/a5fec0e1-f070-4a69-a96b-48d28b2697d7" -H 'content-type: application/json' \
+-d '{"title":"Rio de Janeiro Labor Union Unrest", "url":"http://www.google.com", "text":"Labor union protest sparks civil unrest in Rio de Janeiro, reports of property damage and confrontations with police.", "metadata":{"keywords":["labor unions", "unrest", "Rio de Janeiro"],"coordinates":{"x":"-43.243732","y":"-22.813925"}}}'
+
+curl "$sink_uri/api/alert/a5fec0e1-f070-4a69-a96b-48d28b2697d7" -H 'content-type: application/json' \
+-d '{"title":"Rio de Janeiro Labor Union Unrest", "url":"http://www.google.com", "text":"Labor union protest sparks civil unrest in Rio de Janeiro, reports of property damage and confrontations with police.", "metadata":{"keywords":["labor unions", "unrest", "Rio de Janeiro"],"coordinates":{"x":"-43.243732","y":"-22.813925"}}}'
