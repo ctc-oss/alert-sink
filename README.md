@@ -13,3 +13,6 @@ An extensible service for processing Alerts
 - Something that we persist and make available through subscription and search
 
 #### Developers
+
+- See the hack directory for scripts to publish sample alerts.
+- To use publishNewsAlertForRio and publishSoccerNews, you'll first need to use the register script to register a new application, and then use its uuid in the url path in the publish News scripts.
