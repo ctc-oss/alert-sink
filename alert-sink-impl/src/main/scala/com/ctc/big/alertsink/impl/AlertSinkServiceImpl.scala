@@ -35,7 +35,7 @@ class AlertSinkServiceImpl(registry: PersistentEntityRegistry)(implicit ec: Exec
 
   override def alerts(): Topic[Alert] = {
     TopicProducer.singleStreamWithOffset { offset ⇒
-      registry.eventStream(AlertEvent.Tag, offset).map(ev ⇒ ev.event.alert → offset)
+      registry.eventStream(AlertEvent.Tag, offset).map(ev ⇒ ev.event.alert → ev.offset)
     }
   }
 }
