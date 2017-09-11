@@ -32,7 +32,8 @@ lazy val `alert-sink-api` =
   project.in(file("alert-sink-api"))
   .settings(
     libraryDependencies ++= Seq(
-      lagomScaladslApi
+      lagomScaladslApi,
+      scalaTest
     )
   )
   .enablePlugins(GitVersioning, ArtifactoryPlugin)
