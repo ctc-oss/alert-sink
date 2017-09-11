@@ -50,7 +50,7 @@ object Coordinates {
   implicit val format: Format[Coordinates] = Json.format
 }
 
-case class AlertMeta(keywords: List[String], coordinates: Coordinates)
+case class AlertMeta(keywords: List[String], location: Option[String], coordinates: Option[Coordinates])
 object AlertMeta {
   implicit val format: Format[AlertMeta] = Json.format
 }
