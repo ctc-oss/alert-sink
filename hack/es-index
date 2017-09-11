@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+readonly es_uri="${ELASTICSEARCH_URI:-localhost:9200}"
+
+list() {
+  curl "$es_uri/_cat/indices?v"
+}
+
+"$@"
