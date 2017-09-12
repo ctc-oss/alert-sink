@@ -19,25 +19,25 @@ class AlertSinkServiceSpec extends AsyncWordSpec with Matchers with BeforeAndAft
 
   override protected def afterAll() = server.stop()
 
-  val externalEvent = ExternalEvent("foo", "bar", "baz", AlertMeta(List.empty, None, Some(Coordinates("up", "down", None))))
+  val externalEvent = ExternalEvent("foo", "bar", "baz", Some(Unclassified), AlertMeta(List.empty, None, Some(Coordinates("up", "down", None))))
 
   "alert-sink service" should {
 
     "accept registration" in {
-      client.register().invoke(Application("foo")).map { answer ⇒
+      client.register().invoke(Application("foo", Unclassified)).map { answer ⇒
         answer should matchPattern {
-          case ApplicationRegistration(_, _) ⇒
+          case ApplicationRegistration(_, _, Unclassified) ⇒
         }
       }
     }
 
     "ingest alert" in {
       for {
-        r <- client.register().invoke(Application("bar"))
-        alert <- client.ingest(r.id).invoke(externalEvent)
+        r <- client.register().invoke(Application("bar", Unclassified))
+        alert <- client.consume(r.id).invoke(externalEvent)
       } yield {
         alert should matchPattern {
-          case Alert(_, _, _, "bar", "foo", "baz", _) ⇒
+          case Alert(_, _, _, "bar", "foo", "baz", Unclassified, _) ⇒
         }
       }
     }
@@ -47,7 +47,7 @@ class AlertSinkServiceSpec extends AsyncWordSpec with Matchers with BeforeAndAft
       source.runWith(TestSink.probe[Alert])
       .request(1)
       .expectNext should matchPattern {
-        case Alert(_, _, _, "bar", "foo", "baz", _) ⇒
+        case Alert(_, _, _, "bar", "foo", "baz", Unclassified, _) ⇒
       }
     }
   }

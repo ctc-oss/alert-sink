@@ -4,7 +4,7 @@ import akka.NotUsed
 import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.api.transport.Method
 import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
-import play.api.libs.json.{Format, Json}
+import play.api.libs.json._
 
 
 /**
@@ -28,8 +28,7 @@ trait AlertSinkService extends Service {
   /**
    * @return UUID of logged Alert as String
    */
-  // fixme;; rename to "consume"?
-  def ingest(id: String): ServiceCall[ExternalEvent, Alert]
+  def consume(id: String): ServiceCall[ExternalEvent, Alert]
 
   def alerts(): Topic[Alert]
 
@@ -37,11 +36,29 @@ trait AlertSinkService extends Service {
     import Service._
     named("alert-sink").withCalls(
       restCall(Method.POST, "/api/app", register _),
-      restCall(Method.POST, "/api/alert/:id", ingest _),
+      restCall(Method.POST, "/api/alert/:id", consume _),
       restCall(Method.GET, "/api/application/:id", application _)
     ).withTopics(
       topic(AlertSinkService.AlertsTopic, alerts _)
     ).withAutoAcl(true)
+  }
+}
+
+sealed trait Classification
+case object Unclassified extends Classification
+case object Classified extends Classification
+
+object Classification {
+  implicit val format: Format[Classification] = new Format[Classification] {
+    def writes(o: Classification) = JsString(o.toString.toLowerCase)
+    def reads(json: JsValue) = json match {
+      case JsString(v) ⇒ v.toLowerCase match {
+        case "unclassified" ⇒ JsSuccess(Unclassified)
+        case "classified" ⇒ JsSuccess(Classified)
+        case _ ⇒ JsError(s"failed to parse Classification from $v")
+      }
+      case _ ⇒ JsError(s"expected string Classification marking")
+    }
   }
 }
 
@@ -55,23 +72,22 @@ object AlertMeta {
   implicit val format: Format[AlertMeta] = Json.format
 }
 
-case class ExternalEvent(title: String, url: String, text: String, metadata: AlertMeta)
+case class ExternalEvent(title: String, url: String, text: String, classification: Option[Classification], metadata: AlertMeta)
 object ExternalEvent {
   implicit val format: Format[ExternalEvent] = Json.format
 }
 
-// fixme;; source is probably the appid
-case class Alert(id: String, source: String, timestamp: String, url: String, title: String, text: String, metadata: AlertMeta)
+case class Alert(id: String, source: String, timestamp: String, url: String, title: String, text: String, classification: Classification, metadata: AlertMeta)
 object Alert {
   implicit val format: Format[Alert] = Json.format
 }
 
-case class Application(name: String)
+case class Application(name: String, classification: Classification)
 object Application {
   implicit val format: Format[Application] = Json.format
 }
 
-case class ApplicationRegistration(id: String, token: String)
+case class ApplicationRegistration(id: String, token: String, classification: Classification)
 object ApplicationRegistration {
   implicit val format: Format[ApplicationRegistration] = Json.format
 }

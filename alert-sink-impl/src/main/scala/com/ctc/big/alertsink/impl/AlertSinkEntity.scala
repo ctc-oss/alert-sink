@@ -3,7 +3,7 @@ package com.ctc.big.alertsink.impl
 import java.time.LocalDateTime
 import java.util.UUID
 
-import com.ctc.big.alertsink.api.{Alert, Application, ExternalEvent}
+import com.ctc.big.alertsink.api._
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.ReplyType
 import com.lightbend.lagom.scaladsl.persistence._
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
@@ -27,26 +27,26 @@ class AlertSinkEntity extends PersistentEntity {
   override def initialState: AlertSinkState = AlertSinkState.notready
 
   override def behavior: Behavior = {
-    case AlertSinkState(None, None) ⇒
+    case AlertSinkState(None, None, None) ⇒
       Actions().onCommand[RegisterApplication, String] {
-        case (RegisterApplication(name), ctx, _) ⇒
-          ctx.thenPersist(ApplicationRegistered(name, uuid)) { e ⇒
+        case (RegisterApplication(name, clss), ctx, _) ⇒
+          ctx.thenPersist(ApplicationRegistered(name, uuid, clss)) { e ⇒
             ctx.reply(e.token)
           }
       }.onEvent {
-        case (ApplicationRegistered(name, token), _) ⇒ AlertSinkState(Some(name), Some(token))
+        case (ApplicationRegistered(name, token, clss), _) ⇒ AlertSinkState(Some(name), Some(token), Some(clss))
       }
 
-    case AlertSinkState(Some(name), Some(_)) ⇒
+    case AlertSinkState(Some(name), Some(_), Some(classification)) ⇒
       Actions().onCommand[GenerateAlert, Alert] {
         case (GenerateAlert(ee), ctx, _) ⇒
-          val alert = Alert(uuid, entityId, LocalDateTime.now.toString, ee.url, ee.title, ee.text, ee.metadata)
+          val alert = Alert(uuid, entityId, LocalDateTime.now.toString, ee.url, ee.title, ee.text, ee.classification.getOrElse(classification), ee.metadata)
           ctx.thenPersist(AlertEvent(uuid, alert)) { e ⇒
             ctx.reply(e.alert)
           }
       }.onReadOnlyCommand[AppInfo, Application] {
         case (AppInfo(), ctx, _) ⇒
-          ctx.reply(Application(name))
+          ctx.reply(Application(name, classification))
       }.onEvent {
         case (AlertEvent(_, _), state) ⇒
           log.debug(s"processed alert in {}", state.name)
@@ -66,7 +66,7 @@ class AlertSinkEntity extends PersistentEntity {
 
 sealed trait AlertSinkEvent
 
-case class ApplicationRegistered(name: String, token: String) extends AlertSinkEvent
+case class ApplicationRegistered(name: String, token: String, classification: Classification) extends AlertSinkEvent
 object ApplicationRegistered {
   implicit val format: Format[ApplicationRegistered] = Json.format
 }
@@ -87,7 +87,7 @@ object AlertEvent {
 
 sealed trait AlertSinkCommand[R] extends ReplyType[R]
 
-case class RegisterApplication(name: String) extends AlertSinkCommand[String]
+case class RegisterApplication(name: String, classification: Classification) extends AlertSinkCommand[String]
 object RegisterApplication {
   implicit val format: Format[RegisterApplication] = Json.format
 }
@@ -108,9 +108,10 @@ object GenerateAlert {
  *
  */
 
-case class AlertSinkState(name: Option[String], token: Option[String])
+// fixme;; is this pattern right?
+case class AlertSinkState(name: Option[String], token: Option[String], classification: Option[Classification])
 object AlertSinkState {
-  val notready = AlertSinkState(None, None)
+  val notready = AlertSinkState(None, None, None)
   implicit val format: Format[AlertSinkState] = Json.format
 }
 
