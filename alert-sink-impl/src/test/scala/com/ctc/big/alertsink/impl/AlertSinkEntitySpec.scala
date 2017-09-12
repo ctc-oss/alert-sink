@@ -29,21 +29,31 @@ class AlertSinkEntitySpec extends WordSpec with Matchers with BeforeAndAfterAll 
 
   val EntityID = UUID.randomUUID.toString.take(7)
   val TestUUID = UUID.randomUUID.toString.take(7)
-  val externalEvent = ExternalEvent("foo", "bar", "baz", AlertMeta(List.empty, None, Some(Coordinates("up", "down", None))))
+  val externalEvent = ExternalEvent("foo", "bar", "baz", Some(Classified), AlertMeta(List.empty, None, Some(Coordinates("up", "down", None))))
 
   "alert-sink entity" should {
     "accept application registration" in withTestDriver { driver ⇒
-      val outcome = driver.run(RegisterApplication("test"))
+      val outcome = driver.run(RegisterApplication("test", Classified))
       outcome.replies should contain only TestUUID
     }
 
     "log an event to existing application" in withTestDriver { driver ⇒
-      val outcome1 = driver.run(RegisterApplication("test"))
+      val outcome1 = driver.run(RegisterApplication("test", Classified))
       outcome1.replies should contain only TestUUID
       val outcome2 = driver.run(GenerateAlert(externalEvent))
       outcome2.events.head should matchPattern {
-        case AlertEvent(TestUUID, Alert(TestUUID, EntityID, _, "bar", "foo", "baz", _)) ⇒
+        case AlertEvent(TestUUID, Alert(TestUUID, EntityID, _, "bar", "foo", "baz", Classified, _)) ⇒
       }
+    }
+
+    "apply application classification level if not specified" in withTestDriver { driver ⇒
+      val outcome1 = driver.run(RegisterApplication("test", Classified))
+      outcome1.replies should contain only TestUUID
+      val outcome = driver.run(GenerateAlert(externalEvent.copy(classification = Some(Unclassified))))
+      outcome.events.head should matchPattern {
+        case AlertEvent(TestUUID, Alert(TestUUID, EntityID, _, "bar", "foo", "baz", Unclassified, _)) ⇒
+      }
+
     }
   }
 }
