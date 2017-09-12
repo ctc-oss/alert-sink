@@ -1,7 +1,15 @@
 #!/bin/bash
 
 readonly sink_uri="${SINK_URI:-localhost:9000}"
+readonly classification="${APP_CLASSIFICATION:-unclassified}"
 
-# ExternalEvent(title: String, url: String, text: String, metadata: AlertMeta)
-curl "$sink_uri/api/alert/$1" -H 'content-type: application/json' \
--d '{"title":"bazzz","url":"barrrr","text":"fooo","metadata":{"keywords":["kw"],"coordinates":{"x":"100","y":"-100"}}}'
+# ExternalEvent(title: String, url: String, text: String, classification: Classification, metadata: AlertMeta)
+
+if [ -z "$APP_CLASSIFICATION" ];
+then
+  curl "$sink_uri/api/alert/$1" -H 'content-type: application/json' \
+  -d '{"title":"bazzz","url":"barrrr","text":"fooo", "metadata":{"keywords":["kw"]}}'
+else
+  curl "$sink_uri/api/alert/$1" -H 'content-type: application/json' \
+  -d "{\"title\":\"bazzz\",\"url\":\"barrrr\",\"text\":\"fooo\", \"classification\": \"$APP_CLASSIFICATION\", \"metadata\":{\"keywords\":[\"kw\"]}}"
+fi
