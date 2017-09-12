@@ -28,7 +28,7 @@ class AlertSinkServiceImpl(registry: PersistentEntityRegistry)(implicit ec: Exec
     ref.ask(AppInfo())
   }
 
-  override def ingest(id: String) = ServiceCall { ee ⇒
+  override def consume(id: String) = ServiceCall { ee ⇒
     val ref = registry.refFor[AlertSinkEntity](id)
     ref.ask(GenerateAlert(ee))
   }

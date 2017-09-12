@@ -34,7 +34,7 @@ class AlertSinkServiceSpec extends AsyncWordSpec with Matchers with BeforeAndAft
     "ingest alert" in {
       for {
         r <- client.register().invoke(Application("bar"))
-        alert <- client.ingest(r.id).invoke(externalEvent)
+        alert <- client.consume(r.id).invoke(externalEvent)
       } yield {
         alert should matchPattern {
           case Alert(_, _, _, "bar", "foo", "baz", _) ⇒

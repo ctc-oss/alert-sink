@@ -28,8 +28,7 @@ trait AlertSinkService extends Service {
   /**
    * @return UUID of logged Alert as String
    */
-  // fixme;; rename to "consume"?
-  def ingest(id: String): ServiceCall[ExternalEvent, Alert]
+  def consume(id: String): ServiceCall[ExternalEvent, Alert]
 
   def alerts(): Topic[Alert]
 
@@ -37,7 +36,7 @@ trait AlertSinkService extends Service {
     import Service._
     named("alert-sink").withCalls(
       restCall(Method.POST, "/api/app", register _),
-      restCall(Method.POST, "/api/alert/:id", ingest _),
+      restCall(Method.POST, "/api/alert/:id", consume _),
       restCall(Method.GET, "/api/application/:id", application _)
     ).withTopics(
       topic(AlertSinkService.AlertsTopic, alerts _)
@@ -60,7 +59,6 @@ object ExternalEvent {
   implicit val format: Format[ExternalEvent] = Json.format
 }
 
-// fixme;; source is probably the appid
 case class Alert(id: String, source: String, timestamp: String, url: String, title: String, text: String, metadata: AlertMeta)
 object Alert {
   implicit val format: Format[Alert] = Json.format
