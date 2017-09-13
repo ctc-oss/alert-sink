@@ -2,6 +2,9 @@
 
 readonly sink_uri="${SINK_URI:-localhost:9000}"
 
+readonly app_id="b684f405-964d-4576-81f4-95d8ec57ed96"
+
+
 # ExternalEvent(title: String, url: String, text: String, metadata: AlertMeta)
-curl "$sink_uri/api/alert/a5fec0e1-f070-4a69-a96b-48d28b2697d7" -H 'content-type: application/json' \
--d '{"title":"Rio de Janeiro Soccer Stadium Construction","url":"http://www.google.com","text":"New soccer stadium construction project kicks off in Rio de Janeiro.","metadata":{"keywords":["soccer", "football", "uganda"],"coordinates":{"x":"100","y":"-100"}}}'
+curl "$sink_uri/api/alert/$app_id" -H 'content-type: application/json' \
+-d '{"title":"Rio de Janeiro Soccer Stadium Construction","url":"http://www.google.com","text":"New soccer stadium construction project kicks off in Rio de Janeiro.","classification": "unclassified","metadata":{"keywords":["soccer", "football", "uganda"],"coordinates":{"x":"100","y":"-100"}}}'
