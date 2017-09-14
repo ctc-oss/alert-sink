@@ -19,7 +19,10 @@ class AlertSinkServiceImpl(registry: PersistentEntityRegistry)(implicit ec: Exec
 
     val id = UUID.randomUUID.toString
     val ref = registry.refFor[AlertSinkEntity](id)
-    ref.ask(RegisterApplication(app.name, app.classification)).map(token ⇒ ApplicationRegistration(id, token, app.classification))
+    ref.ask(RegisterApplication(app.name, app.classification)).map { token ⇒
+      logger.info("application {} registered", app.name)
+      ApplicationRegistration(id, token, app.classification)
+    }
   }
 
 
@@ -30,7 +33,9 @@ class AlertSinkServiceImpl(registry: PersistentEntityRegistry)(implicit ec: Exec
 
   override def consume(id: String) = ServiceCall { ee ⇒
     val ref = registry.refFor[AlertSinkEntity](id)
-    ref.ask(GenerateAlert(ee))
+    ref.ask(GenerateAlert(ee)).recover{
+      case ex ⇒ throw new Exception(s"${ee.title} failed with ${ex.getMessage}")
+    }
   }
 
   override def alerts(): Topic[Alert] = {

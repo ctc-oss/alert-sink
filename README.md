@@ -16,3 +16,7 @@ An extensible service for processing Alerts
 
 - See the hack directory for scripts to publish sample alerts.
 - To use publishNewsAlertForRio and publishSoccerNews, you'll first need to use the register script to register a new application, and then use its uuid in the url path in the publish News scripts.
+
+#### Kibana
+
+The docker compose in this project wires in Kibana, you can reach it here http://localhost:5601/app/kibana

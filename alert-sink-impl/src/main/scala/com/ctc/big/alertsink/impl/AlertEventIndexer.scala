@@ -21,6 +21,6 @@ class AlertEventIndexer(sink: AlertSinkService, es: Elasticsearch)(implicit mat:
       .map(_ ⇒ aa)
     }
   ).runWith(Sink.foreach(aa ⇒
-    logger.info("indexed alert [{}] to app {}", aa._2.id, aa._1.name)
+    logger.debug("indexed alert [{}] to app {}", aa._2.id, aa._1.name)
   ))
 }
