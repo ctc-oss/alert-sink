@@ -20,3 +20,13 @@ An extensible service for processing Alerts
 #### Kibana
 
 The docker compose in this project wires in Kibana, you can reach it here http://localhost:5601/app/kibana
+
+#### Configuration
+
+- `ALERT_SINK_URI`: uri this service is exposed at
+- `ELASTICSEARCH_URI`: 
+- `PERSIST_DB_NAME`: 
+- `PERSIST_HOST`: 
+- `PERSIST_PORT`: 
+- `PERSIST_USER`: 
+- `PERSIST_PASSWORD`: 
