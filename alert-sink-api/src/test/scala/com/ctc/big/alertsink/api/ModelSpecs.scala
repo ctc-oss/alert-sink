@@ -8,31 +8,33 @@ class ModelSpecs extends WordSpec with Matchers {
   val Title = "Awesome Alert"
   val Text = "text!"
   val Url = "ctc.com"
+  val Time = System.currentTimeMillis
   val Keywords = List("foo", "Bar", "BAZ")
   val X = "100"
   val Y = "-100"
-  val Location = "Jtown"
+  val Coords = Coordinates.parse(X, Y)
+  val LocationName = "Jtown"
   val Classification = Unclassified
 
   "alert meta parsing" should {
     "handle optionals" when {
       "no location or coords" in {
         Json.parse(s"""{"keywords": ${Keywords.asjson}}""").as[AlertMeta] should
-          matchPattern { case AlertMeta(Keywords, None, None) ⇒ }
+          matchPattern { case AlertMeta(Keywords, None, None, None) ⇒ }
       }
       "location only" in {
-        Json.parse(s"""{"classification":${Classification.asjson}, "keywords": ${Keywords.asjson}, "location" : "$Location"}""").as[AlertMeta] should
-          matchPattern { case AlertMeta(Keywords, Some(Location), None) ⇒ }
+        Json.parse(s"""{"classification":${Classification.asjson}, "keywords": ${Keywords.asjson}, "locationName" : "$LocationName"}""").as[AlertMeta] should
+          matchPattern { case AlertMeta(Keywords, None, Some(LocationName), None) ⇒ }
 
       }
       "coords only" in {
-        Json.parse(s"""{"classification":${Classification.asjson}, "keywords": ${Keywords.asjson}, "coordinates": {"x": "$X", "y": "$Y"}}""").as[AlertMeta] should
-          matchPattern { case AlertMeta(Keywords, None, Some(Coordinates(X, Y, None))) ⇒ }
+        Json.parse(s"""{"classification":${Classification.asjson}, "keywords": ${Keywords.asjson}, "location": {"lat": $Y, "lon": $X}}""").as[AlertMeta] should
+          matchPattern { case AlertMeta(Keywords, None, None, Coords) ⇒ }
 
       }
-      "both location and coords" in {
-        Json.parse(s"""{"classification":${Classification.asjson}, "keywords": ${Keywords.asjson}, "location" : "$Location", "coordinates": {"x": "$X", "y": "$Y"}}""").as[AlertMeta] should
-          matchPattern { case AlertMeta(Keywords, Some(Location), Some(Coordinates(X, Y, None))) ⇒ }
+      "both locationName and location with time" in {
+        Json.parse(s"""{"classification":${Classification.asjson}, "eventTime":$Time, "keywords": ${Keywords.asjson}, "locationName" : "$LocationName", "location": {"lat": $Y, "lon": $X}}""").as[AlertMeta] should
+          matchPattern { case AlertMeta(Keywords, Some(Time), Some(LocationName), Coords) ⇒ }
       }
     }
   }

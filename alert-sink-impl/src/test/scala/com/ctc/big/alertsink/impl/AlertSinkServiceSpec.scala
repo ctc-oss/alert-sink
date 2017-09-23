@@ -19,7 +19,7 @@ class AlertSinkServiceSpec extends AsyncWordSpec with Matchers with BeforeAndAft
 
   override protected def afterAll() = server.stop()
 
-  val externalEvent = ExternalEvent("foo", "bar", "baz", Some(Unclassified), AlertMeta(List.empty, None, Some(Coordinates("up", "down", None))))
+  val externalEvent = ExternalEvent("foo", "bar", "baz", Some(Unclassified), AlertMeta(List.empty, None, None, Some(Coordinates(1, -1))))
 
   "alert-sink service" should {
 

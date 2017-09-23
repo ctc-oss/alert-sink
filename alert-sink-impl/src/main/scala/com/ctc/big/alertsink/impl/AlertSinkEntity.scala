@@ -40,7 +40,7 @@ class AlertSinkEntity extends PersistentEntity {
     case AlertSinkState(Some(name), Some(_), Some(classification)) ⇒
       Actions().onCommand[GenerateAlert, Alert] {
         case (GenerateAlert(ee), ctx, _) ⇒
-          val alert = Alert(uuid, entityId, LocalDateTime.now.toString, ee.url, ee.title, ee.text, ee.classification.getOrElse(classification), ee.metadata)
+          val alert = Alert(uuid, entityId, LocalDateTime.now.getSecond, ee.url, ee.title, ee.text, ee.classification.getOrElse(classification), ee.metadata)
           ctx.thenPersist(AlertEvent(uuid, alert)) { e ⇒
             ctx.reply(e.alert)
           }
