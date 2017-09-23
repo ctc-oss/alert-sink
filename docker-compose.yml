@@ -57,9 +57,12 @@ services:
     links:
       - mysql
       - kafka
+      - elasticsearch
     environment:
+      LOG_LEVEL: info
       PERSIST_HOST: mysql
       KAFKA_BROKER: kafka:9092
+      ELASTICSEARCH_URI: elasticsearch:9200
 
   kibana:
     image: lbischof/kibana
