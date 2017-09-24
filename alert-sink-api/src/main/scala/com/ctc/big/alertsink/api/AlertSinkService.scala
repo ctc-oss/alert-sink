@@ -66,10 +66,10 @@ object Classification {
 
 case class Coordinates(lon: Double, lat: Double)
 object Coordinates {
-  def parse(slon: String, slat: String): Option[Coordinates] = {
+  def parse(slon: String, slat: String): Try[Coordinates] = {
     for {
-      lon ← Try(slon.toDouble).toOption
-      lat ← Try(slat.toDouble).toOption
+      lon ← Try(slon.toDouble)
+      lat ← Try(slat.toDouble)
     } yield Coordinates(lon, lat)
   }
 

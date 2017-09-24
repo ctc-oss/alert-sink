@@ -3,6 +3,8 @@ package com.ctc.big.alertsink.api
 import org.scalatest.{Matchers, WordSpec}
 import play.api.libs.json.{JsResultException, Json}
 
+import scala.util.{Failure, Success}
+
 
 class ModelSpecs extends WordSpec with Matchers {
   val Title = "Awesome Alert"
@@ -12,7 +14,7 @@ class ModelSpecs extends WordSpec with Matchers {
   val Keywords = List("foo", "Bar", "BAZ")
   val X = "100"
   val Y = "-100"
-  val Coords = Coordinates.parse(X, Y)
+  val Coords = Coordinates.parse(X, Y).get
   val LocationName = "Jtown"
   val Classification = Unclassified
 
@@ -29,12 +31,12 @@ class ModelSpecs extends WordSpec with Matchers {
       }
       "coords only" in {
         Json.parse(s"""{"classification":${Classification.asjson}, "keywords": ${Keywords.asjson}, "location": {"lat": $Y, "lon": $X}}""").as[AlertMeta] should
-          matchPattern { case AlertMeta(Keywords, None, None, Coords) ⇒ }
+          matchPattern { case AlertMeta(Keywords, None, None, Some(Coords)) ⇒ }
 
       }
       "both locationName and location with time" in {
         Json.parse(s"""{"classification":${Classification.asjson}, "eventTime":$Time, "keywords": ${Keywords.asjson}, "locationName" : "$LocationName", "location": {"lat": $Y, "lon": $X}}""").as[AlertMeta] should
-          matchPattern { case AlertMeta(Keywords, Some(Time), Some(LocationName), Coords) ⇒ }
+          matchPattern { case AlertMeta(Keywords, Some(Time), Some(LocationName), Some(Coords)) ⇒ }
       }
     }
   }
@@ -58,6 +60,25 @@ class ModelSpecs extends WordSpec with Matchers {
           Json.parse(s"""{"classification":"foo", "title":"$Title","url":"$Url","text":"$Text","metadata":{"keywords": ${Keywords.asjson}}}""").as[ExternalEvent]
         }
       }
+    }
+  }
+
+  "coordinate parsing" should {
+    "parse json" in {
+      Json.parse(s"""{"lat": $Y, "lon": $X}""").as[Coordinates] shouldBe Coords
+    }
+
+    "parse string" in {
+      Coordinates.parse(X, Y) shouldBe Success(Coords)
+    }
+
+    "bubble up failure" in {
+      Coordinates.parse("not", "valid") should matchPattern { case Failure(_: NumberFormatException) ⇒ }
+    }
+
+    "convert to option" in {
+      Coordinates.parse(X, Y).toOption shouldBe Some(Coords)
+      Coordinates.parse("not", "valid").toOption shouldBe None
     }
   }
 
