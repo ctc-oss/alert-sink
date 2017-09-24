@@ -18,6 +18,9 @@ class AlertEventIndexer(sink: AlertSinkService, es: Elasticsearch)(implicit mat:
     ).mapAsync(1) { aa ⇒
       es.updateIndex(s"alert-${aa._1.name}", aa._2.id)
       .invoke(UpdateIndexAlert(aa._2))
+      .recover {
+        case ex ⇒ logger.warn("failed to index alert [{}], {}", aa._2.id, ex.getMessage)
+      }
       .map(_ ⇒ aa)
     }
   ).runWith(Sink.foreach(aa ⇒
