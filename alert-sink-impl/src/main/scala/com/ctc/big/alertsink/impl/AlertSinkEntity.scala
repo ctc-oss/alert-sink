@@ -1,6 +1,6 @@
 package com.ctc.big.alertsink.impl
 
-import java.time.LocalDateTime
+import java.time.{LocalDateTime, ZoneOffset}
 import java.util.UUID
 
 import com.ctc.big.alertsink.api._
@@ -40,7 +40,7 @@ class AlertSinkEntity extends PersistentEntity {
     case AlertSinkState(Some(name), Some(_), Some(classification)) ⇒
       Actions().onCommand[GenerateAlert, Alert] {
         case (GenerateAlert(ee), ctx, _) ⇒
-          val alert = Alert(uuid, entityId, LocalDateTime.now.getSecond, ee.url, ee.title, ee.text, ee.classification.getOrElse(classification), ee.metadata)
+          val alert = Alert(uuid, entityId, utcTimestamp(), ee.url, ee.title, ee.text, ee.classification.getOrElse(classification), ee.metadata)
           ctx.thenPersist(AlertEvent(uuid, alert)) { e ⇒
             ctx.reply(e.alert)
           }
@@ -55,6 +55,7 @@ class AlertSinkEntity extends PersistentEntity {
   }
 
   def uuid = UUID.randomUUID.toString
+  def utcTimestamp() = LocalDateTime.now.toInstant(ZoneOffset.UTC).getEpochSecond
 }
 
 

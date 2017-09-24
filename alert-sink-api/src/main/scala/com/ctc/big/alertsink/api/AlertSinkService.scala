@@ -78,6 +78,8 @@ object Coordinates {
 
 case class AlertMeta(keywords: List[String], eventTime: Option[Long], locationName: Option[String], location: Option[Coordinates])
 object AlertMeta {
+  val Empty = AlertMeta(List(), None, None, None)
+
   implicit val format: Format[AlertMeta] = Json.format
 }
 
@@ -86,7 +88,7 @@ object ExternalEvent {
   implicit val format: Format[ExternalEvent] = Json.format
 }
 
-case class Alert(id: String, source: String, alertTime: Long, url: String, title: String, text: String, classification: Classification, metadata: AlertMeta)
+case class Alert(id: String, source: String, time: Long, url: String, title: String, text: String, classification: Classification, metadata: AlertMeta)
 object Alert {
   implicit val format: Format[Alert] = Json.format
 }
