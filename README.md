@@ -16,6 +16,11 @@ An extensible service for processing Alerts
 
 - See the hack directory for scripts to publish sample alerts.
 - To use publishNewsAlertForRio and publishSoccerNews, you'll first need to use the register script to register a new application, and then use its uuid in the url path in the publish News scripts.
+- When running the docker compose from scratch the mysql container wont get started up in time for lagom, and lagom fails.  At this point the lagom container is in a weird state and cannot be restarted.  The best way to start things up is
+  - docker compose up the mysql container
+  - docker compose up the rest of the containers
+ 
+
 
 #### Kibana
 
@@ -26,7 +31,7 @@ The docker compose in this project wires in Kibana, you can reach it here http:/
 To enable the `metadata.location` object to be picked up as a [geo_point](https://www.elastic.co/guide/en/elasticsearch/reference/current/geo-point.html) in Elasticsearch
 
 ```
-curl -vs elasticsearch:9200/alert-sample -XPUT -d '
+curl -vs localhost:9200/alert-gdelt -XPUT -d '
 {
   "mappings": {
     "items": {
