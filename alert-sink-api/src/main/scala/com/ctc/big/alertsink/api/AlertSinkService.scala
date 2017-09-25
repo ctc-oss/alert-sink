@@ -6,6 +6,8 @@ import com.lightbend.lagom.scaladsl.api.transport.Method
 import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
 import play.api.libs.json._
 
+import scala.util.Try
+
 
 /**
  * simple is as simple does
@@ -62,13 +64,22 @@ object Classification {
   }
 }
 
-case class Coordinates(x: String, y: String, z: Option[String])
+case class Coordinates(lon: Double, lat: Double)
 object Coordinates {
+  def parse(slon: String, slat: String): Try[Coordinates] = {
+    for {
+      lon ← Try(slon.toDouble)
+      lat ← Try(slat.toDouble)
+    } yield Coordinates(lon, lat)
+  }
+
   implicit val format: Format[Coordinates] = Json.format
 }
 
-case class AlertMeta(keywords: List[String], location: Option[String], coordinates: Option[Coordinates])
+case class AlertMeta(keywords: List[String], eventTime: Option[Long], locationName: Option[String], location: Option[Coordinates])
 object AlertMeta {
+  val Empty = AlertMeta(List(), None, None, None)
+
   implicit val format: Format[AlertMeta] = Json.format
 }
 
@@ -77,7 +88,7 @@ object ExternalEvent {
   implicit val format: Format[ExternalEvent] = Json.format
 }
 
-case class Alert(id: String, source: String, timestamp: String, url: String, title: String, text: String, classification: Classification, metadata: AlertMeta)
+case class Alert(id: String, source: String, time: Long, url: String, title: String, text: String, classification: Classification, metadata: AlertMeta)
 object Alert {
   implicit val format: Format[Alert] = Json.format
 }

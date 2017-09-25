@@ -21,12 +21,37 @@ An extensible service for processing Alerts
 
 The docker compose in this project wires in Kibana, you can reach it here http://localhost:5601/app/kibana
 
+#### Elasticsearch
+
+To enable the `metadata.location` object to be picked up as a [geo_point](https://www.elastic.co/guide/en/elasticsearch/reference/current/geo-point.html) in Elasticsearch
+
+```
+curl -vs elasticsearch:9200/alert-sample -XPUT -d '
+{
+  "mappings": {
+    "items": {
+      "properties": {
+        "metadata": {
+          "type": "nested",
+          "properties": {
+            "location": {"type": "geo_point"}
+          }
+        }
+      }
+    }
+  }
+}
+'
+```
+
+https://www.elastic.co/guide/en/elasticsearch/guide/current/nested-mapping.html
+
 #### Configuration
 
-- `ALERT_SINK_URI`: uri this service is exposed at
-- `ELASTICSEARCH_URI`: 
-- `PERSIST_DB_NAME`: 
-- `PERSIST_HOST`: 
-- `PERSIST_PORT`: 
-- `PERSIST_USER`: 
-- `PERSIST_PASSWORD`: 
+- `KAFKA_BROKER`: kafka host and port (no scheme) (default `172.17.0.1:9092`)
+- `ELASTICSEARCH_URI`: uri of elasticsearch (default `http://172.17.0.1:9200`)
+- `PERSIST_DB_NAME`: database db name (default `mysql`)
+- `PERSIST_HOST`: database host (default `172.17.0.1`)
+- `PERSIST_PORT`: database port (default `3306`)
+- `PERSIST_USER`: database user (default `mysql`)
+- `PERSIST_PASSWORD`: database password (default `mysql`)

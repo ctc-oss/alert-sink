@@ -21,7 +21,7 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://172.17.0.1:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
     logging:
       driver: none
 
@@ -62,7 +62,7 @@ services:
       LOG_LEVEL: info
       PERSIST_HOST: mysql
       KAFKA_BROKER: kafka:9092
-      ELASTICSEARCH_URI: elasticsearch:9200
+      ELASTICSEARCH_URI: http://elasticsearch:9200
 
   kibana:
     image: lbischof/kibana

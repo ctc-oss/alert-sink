@@ -29,7 +29,7 @@ class AlertSinkEntitySpec extends WordSpec with Matchers with BeforeAndAfterAll 
 
   val EntityID = UUID.randomUUID.toString.take(7)
   val TestUUID = UUID.randomUUID.toString.take(7)
-  val externalEvent = ExternalEvent("foo", "bar", "baz", Some(Classified), AlertMeta(List.empty, None, Some(Coordinates("up", "down", None))))
+  val externalEvent = ExternalEvent("foo", "bar", "baz", Some(Classified), AlertMeta(List.empty, None, None, Coordinates.parse("1", "-1").toOption))
 
   "alert-sink entity" should {
     "accept application registration" in withTestDriver { driver ⇒
