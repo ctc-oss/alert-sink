@@ -55,7 +55,7 @@ class AlertSinkEntity extends PersistentEntity {
   }
 
   def uuid = UUID.randomUUID.toString
-  def utcTimestamp() = LocalDateTime.now.toInstant(ZoneOffset.UTC).getEpochSecond
+  def utcTimestamp() = LocalDateTime.now.toInstant(ZoneOffset.UTC).toEpochMilli
 }
 
 
