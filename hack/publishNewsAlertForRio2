@@ -2,7 +2,7 @@
 
 readonly sink_uri="${SINK_URI:-localhost:9000}"
 
-readonly app_id="b684f405-964d-4576-81f4-95d8ec57ed96"
+readonly app_id="ce26f701-64f8-4804-be09-02b5b2ac7acb"
 
 
 # ExternalEvent(title: String, url: String, text: String, metadata: AlertMeta)
