@@ -36,7 +36,7 @@ services:
       ZK_HOST: zookeeper:2181
 
   elasticsearch:
-    image: lbischof/elasticsearch
+    image: elasticsearch
     ports:
       - 9200:9200
     environment:
@@ -44,6 +44,15 @@ services:
       http.host: "0.0.0.0"
       transport.host: "127.0.0.1"
       xpack.security.enabled: "false"
+
+  kibana:
+    image: kibana
+    ports:
+      - 5601:5601
+    links:
+      - elasticsearch
+    environment:
+      ELASTICSEARCH_SERVICE_HOST: elasticsearch
 
   mysql:
     image: docker.ctc.com/openshift/akka-persistence-mysql
@@ -63,12 +72,3 @@ services:
       PERSIST_HOST: mysql
       KAFKA_BROKER: kafka:9092
       ELASTICSEARCH_URI: http://elasticsearch:9200
-
-  kibana:
-    image: lbischof/kibana
-    ports:
-      - 5601:5601
-    links:
-      - elasticsearch
-    environment:
-      ELASTICSEARCH_SERVICE_HOST: elasticsearch
