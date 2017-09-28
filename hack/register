@@ -5,4 +5,7 @@ readonly app_name="${1:-default}"
 readonly classification="${APP_CLASSIFICATION:-unclassified}"
 
 # Application(name: String)
-curl -s "$sink_uri/api/app" -H 'content-type: application/json' -d "{\"name\":\"$1\", \"classification\":\"$classification\"}"
+app=$(curl -s "$sink_uri/api/app" -H 'content-type: application/json' -d "{\"name\":\"$1\", \"classification\":\"$classification\"}")
+./es-index init "alert-$app_name"
+
+echo "$app"

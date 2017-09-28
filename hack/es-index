@@ -6,4 +6,27 @@ list() {
   curl "$es_uri/_cat/indices?v"
 }
 
+get() {
+  curl "$es_uri/$1" | jq .
+}
+
+init() {
+  declare index="$1"
+
+  curl -vs localhost:9200/${index} -XPUT -d '
+  {
+    "mappings": {
+      "alert": {
+        "properties": {
+          "metadata": {
+            "properties": {
+              "location": {"type": "geo_point"}
+            }
+          }
+        }
+      }
+    }
+  }'
+}
+
 "$@"
