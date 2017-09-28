@@ -34,10 +34,9 @@ To enable the `metadata.location` object to be picked up as a [geo_point](https:
 curl -vs localhost:9200/alert-gdelt -XPUT -d '
 {
   "mappings": {
-    "items": {
+    "alert": {
       "properties": {
         "metadata": {
-          "type": "nested",
           "properties": {
             "location": {"type": "geo_point"}
           }
