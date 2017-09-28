@@ -13,7 +13,7 @@ get() {
 init() {
   declare index="$1"
 
-  curl -vs localhost:9200/${index} -XPUT -d '
+  curl -s localhost:9200/${index} -XPUT -d '
   {
     "mappings": {
       "alert": {

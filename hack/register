@@ -3,9 +3,14 @@
 readonly sink_uri="${SINK_URI:-localhost:9000}"
 readonly app_name="${1:-default}"
 readonly classification="${APP_CLASSIFICATION:-unclassified}"
+readonly HACKDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+__echoerr() { if [[ ${QUIET} -ne 1 ]]; then echo "$@" 1>&2; fi }
 
 # Application(name: String)
 app=$(curl -s "$sink_uri/api/app" -H 'content-type: application/json' -d "{\"name\":\"$1\", \"classification\":\"$classification\"}")
-./es-index init "alert-$app_name"
 
+index=$(${HACKDIR}/es-index init "alert-$app_name")
+
+__echoerr "geopoint installation: $index"
 echo "$app"
