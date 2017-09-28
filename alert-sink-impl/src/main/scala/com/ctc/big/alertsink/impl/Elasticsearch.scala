@@ -10,7 +10,7 @@ trait Elasticsearch extends Service {
   override def descriptor: Descriptor =
     named("elasticsearch")
     .withCalls(
-      restCall(Method.POST, "/:index/items/:id/_update", updateIndex _)
+      restCall(Method.POST, "/:index/alert/:id/_update", updateIndex _)
       .withCircuitBreaker(CircuitBreaker.identifiedBy("elasticsearch-circuitbreaker"))
     ).withAutoAcl(true)
 
