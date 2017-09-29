@@ -1,3 +1,7 @@
+/*
+ * ©Concurrent Technologies Corporation 2017
+ */
+
 package com.ctc.big.alertsink.api
 
 import akka.NotUsed
