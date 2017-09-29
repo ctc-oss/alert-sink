@@ -26,10 +26,12 @@ lazy val `alert-sink` =
     `alert-sink-api`,
     `alert-sink-impl`
   )
+  .settings(commonSettings: _*)
   .enablePlugins(GitVersioning)
 
 lazy val `alert-sink-api` =
   project.in(file("alert-sink-api"))
+  .settings(commonSettings: _*)
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslApi,
@@ -42,6 +44,7 @@ lazy val `alert-sink-impl` =
   project.in(file("alert-sink-impl"))
   .dependsOn(`alert-sink-api`)
   .settings(lagomForkedTestSettings: _*)
+  .settings(commonSettings: _*)
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslPersistenceJdbc,
@@ -60,6 +63,12 @@ lazy val `alert-sink-impl` =
 lazy val macwire = "com.softwaremill.macwire" %% "macros" % "2.2.5" % "provided"
 lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.0.1" % Test
 lazy val playJsonDerivedCodecs = "org.julienrf" %% "play-json-derived-codecs" % "3.3"
+
+lazy val commonSettings = Seq(
+  headerLicense := Some(HeaderLicense.Custom(
+    "©Concurrent Technologies Corporation 2017"
+  ))
+)
 
 lazy val dockerSettings = Seq(
   packageName in Docker := "alert-sink",
