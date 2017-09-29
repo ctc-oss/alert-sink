@@ -7,6 +7,7 @@ stages:
 unit_test:
   stage: test
   script:
+    - sbt headerCheck
     - sbt coverage test coverageReport
     - sbt coverageAggregate
 
